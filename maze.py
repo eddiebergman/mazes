@@ -7,38 +7,42 @@ class Maze(object):
     def __init__(self, width, height):
         self.width = width
         self.height = height
-        self.grid = [[Cell(x,y) for y in range(height)] for x in range(width)]
+        self.grid = [None] * (width * height)
+        for i in range(width*height):
+            self.grid[i] = Cell()
 
+    def get_cell(self, x, y):
+        return self.grid[y * self.width + x]
 
-
-    def wall_to_east(self, cell):
-        wall = Wall(cell, self.grid[cell.x+1][cell.y])
+    def wall_to_east(self, x,y):
+        cell = self.get_cell(x,y)
+        cell2 = self.get_cell(x+1,y)
+        wall = Wall(cell, cell2)
         cell.walls['east'] = wall
-        self.grid[cell.x+1][cell.y].walls['west'] = wall
+        cell2.walls['west'] = wall
 
 
 
-    def wall_to_south(self, cell):
-        wall = Wall(cell, self.grid[cell.x][cell.y+1])
+    def wall_to_south(self, x,y):
+        cell = self.get_cell(x,y)
+        cell2 = self.get_cell(x,y+1)
+        wall = Wall(cell,cell2)
         cell.walls['south'] = wall
-        self.grid[cell.x][cell.y+1].walls['north'] = wall
+        cell2.walls['north'] = wall
 
     def generate(self):
         for y in range(self.height-1):
             for x in range(self.width-1):
-                cell = self.grid[x][y]
-                self.wall_to_east(cell)
-                self.wall_to_south(cell)
+                self.wall_to_east(x,y)
+                self.wall_to_south(x,y)
 
         for y in range(self.height-1):
-            cell = self.grid[self.width-1][y]
-            self.wall_to_south(cell)
+            self.wall_to_south(self.width-1,y)
 
         for x in range(self.width-1):
-            cell = self.grid[x][self.height - 1]
-            self.wall_to_east(cell)
+            self.wall_to_east(x,self.height-1)
 
-        start = self.grid[0][0]
+        start = self.get_cell(0,0)
         start.visited = True
         wall_list = []
         for wall in start.walls.values():
@@ -46,10 +50,11 @@ class Maze(object):
                 wall_list.append(wall)
 
         while wall_list:
-            wall = random.choice(wall_list)
+
+            index = random.randint(0,len(wall_list)-1)
+            wall = wall_list.pop(index)
             cell1 = wall.cell1
             cell2 = wall.cell2
-
             if cell1.visited ^ cell2.visited: #if only one is visited/not visisted
                 unvisited_cell = cell2 if cell1.visited else cell1
                 wall.passage = True
@@ -58,7 +63,6 @@ class Maze(object):
                 for adjacent_wall in unvisited_cell.walls.values():
                     if adjacent_wall and not adjacent_wall.passage:
                         wall_list.append(adjacent_wall)
-            wall_list.remove(wall)
 
     def to_picture(self):
         pic = Picture(self.width*4+1, self.height*4+1)
@@ -67,20 +71,21 @@ class Maze(object):
 
                 for y in range(1+j*4,4+j*4):
                     for x in range(1+i*4,4+i*4):
-                        pic.pixels[x][y].grey_scale(255)
+                        pic.colour_pixel(x,y,Colour.WHITE)
 
-                n = self.grid[i][j].walls['north']
-                s = self.grid[i][j].walls['south']
-                e = self.grid[i][j].walls['east']
-                w = self.grid[i][j].walls['west']
+                cell = self.get_cell(i,j)
+                n = cell.walls['north']
+                s = cell.walls['south']
+                e = cell.walls['east']
+                w = cell.walls['west']
                 if(n and n.passage):
-                    pic.pixels[i*4+2][j*4+2-2].set_colour(Colour.WHITE)
+                    pic.colour_pixel(i*4+2,j*4+2-2,Colour.WHITE)
                 if(s and s.passage):
-                    pic.pixels[i*4+2][j*4+2+2].set_colour(Colour.WHITE)
+                    pic.colour_pixel(i*4+2,j*4+2+2,Colour.WHITE)
                 if(e and e.passage):
-                    pic.pixels[i*4+2+2][j*4+2].set_colour(Colour.WHITE)
+                    pic.colour_pixel(i*4+2+2,j*4+2,Colour.WHITE)
                 if(w and w.passage):
-                    pic.pixels[i*4+2-2][j*4+2].set_colour(Colour.WHITE)
+                    pic.colour_pixel(i*4+2-2,j*4+2,Colour.WHITE)
 
 
 
@@ -89,16 +94,18 @@ class Maze(object):
 class Cell(object):
     """docstring for Cell."""
 
-    def __init__(self, x, y, walls=None):
+    id = 0
+
+    def __init__(self, walls=None):
         self.visited = False
-        self.x = x
-        self.y = y
         self.walls = {
             'north' : None,
             'south' : None,
             'east'  : None,
             'west'  : None
         }
+        self.id = Cell.id
+        Cell.id += 1
 
 
 
@@ -117,8 +124,7 @@ class Wall(object):
 def main():
     maze = Maze(int(sys.argv[1]),int(sys.argv[2]))
     maze.generate()
-    pic = maze.to_picture()
-    pic.to_PNG(sys.argv[3])
+    maze.to_picture().to_PNG(sys.argv[3])
 
 if __name__ == '__main__':
     main()
