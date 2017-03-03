@@ -3,28 +3,24 @@ from enum import Enum
 
 class Picture(object):
 
-    def __init__(self, width, height,r=0,g=0,b=0):
+    def __init__(self, width, height):
         self.width = width;
         self.height = height;
-        self.pixels = [[Pixel(r,g,b) for y in range(height)] for x in range(width)]
+        self.pixels = [0] * (width*height*3)
 
-    def get_pixel(self, x, y):
-        return self.pixels[x][y]
+    def colour_pixel(self, x, y, colour):
+        index = (y*self.width + x)*3
+        self.pixels[index] = colour[0]
+        self.pixels[index+1] = colour[1]
+        self.pixels[index+2] = colour[2]
 
     def to_PNG(self, name):
-        p = [[0 for x in range(self.width*3)] for x in range(self.height)]
-        for y in range(self.height):
-            for x in range(self.width):
-                pixel = self.pixels[x][y]
-                p[y][x*3+0] = pixel.r
-                p[y][x*3+1] = pixel.g
-                p[y][x*3+2] = pixel.b
         f = open(name, 'wb')
         w = png.Writer(self.width, self.height)
-        w.write(f, p)
+        w.write_array(f, self.pixels)
         f.close()
 
-class Pixel(object):
+class Psuedo_Pixel(object):
 
     def __init__(self, r, g, b):
         self.r = r
@@ -44,6 +40,16 @@ class Pixel(object):
 class Colour(object):
     RED     = (255,0,0)
     GREEN   = (0,255,0)
-    RED     = (0,0,255)
+    BLUE    = (0,0,255)
     BLACK   = (0,0,0)
     WHITE   = (255,255,255)
+
+def main():
+    pic = Picture(100,100)
+    for y in range(100):
+        for x in range(100):
+            pic.colour_pixel(x,y,Colour.RED)
+    pic.to_PNG("out.png")
+
+if __name__ == '__main__':
+    main()
