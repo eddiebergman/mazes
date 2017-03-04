@@ -53,17 +53,3 @@ class Edge(object):
         self.to = cell_to
         self.data = data
         self.weight = weight
-
-def main():
-    g = Graph()
-    g.add_node(Node(1))
-    g.add_node(Node(2))
-    g.add_node(Node(1))
-    g.connect(g.get_node(0), g.get_node(1))
-    n = g.get_node(0)
-    n.connect_to(g.get_node(2))
-
-    print(g)
-
-if __name__ == '__main__':
-    main()
