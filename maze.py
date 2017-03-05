@@ -65,27 +65,23 @@ class Maze(object):
                         wall_list.append(adjacent_wall)
 
     def to_picture(self):
-        pic = Picture(self.width*4+1, self.height*4+1)
+        pic = Picture(self.width*2+1, self.height*2+1)
         for j in range(self.height):
             for i in range(self.width):
-
-                for y in range(1+j*4,4+j*4):
-                    for x in range(1+i*4,4+i*4):
-                        pic.colour_pixel(x,y,Colour.WHITE)
-
+                pic.colour_pixel(i*2+1,j*2+1,Colour.WHITE)
                 cell = self.get_cell(i,j)
                 n = cell.walls['north']
                 s = cell.walls['south']
                 e = cell.walls['east']
                 w = cell.walls['west']
                 if(n and n.passage):
-                    pic.colour_pixel(i*4+2,j*4+2-2,Colour.WHITE)
+                    pic.colour_pixel(i*2+1,j*2+1-1,Colour.WHITE)
                 if(s and s.passage):
-                    pic.colour_pixel(i*4+2,j*4+2+2,Colour.WHITE)
+                    pic.colour_pixel(i*2+1,j*2+1+1,Colour.WHITE)
                 if(e and e.passage):
-                    pic.colour_pixel(i*4+2+2,j*4+2,Colour.WHITE)
+                    pic.colour_pixel(i*2+1+1,j*2+1,Colour.WHITE)
                 if(w and w.passage):
-                    pic.colour_pixel(i*4+2-2,j*4+2,Colour.WHITE)
+                    pic.colour_pixel(i*2+1-1,j*2+1,Colour.WHITE)
 
 
 
